@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>电影列表</title>
+    <!-- Bootstrap -->
+    <link href="../css/bootstrap.css" rel="stylesheet">
+    <link href="../css/base.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+<div id="app" class="container-fluid">
+    <h1>电影列表</h1>
+    <div class="col-sm-8 col-sm-offset-2 searchForm">
+        <div class="form-inline">
+            <div class="form-group col-xs-9">
+                <label for="ipt_name" class="col-xs-3 col-sm-3 control-label">电影名</label>
+                <div class="col-xs-9 col-sm-9"><input type="text" class="form-control" id="ipt_name" placeholder="请输入电影名" name="movieName"></div>
+            </div>
+            <button type="submit" class="btn btn-primary col-xs-3" id="submitBtn" @click="loadFileList()">Submit</button>
+        </div>
+    </div>
+    <div id="movieList" class="col-sm-8 col-sm-offset-2" v-if="movies">
+        <div class="movieInfo col-xs-4 col-sm-3 col-lg-2" v-for="(movie,idx) in curMovies">
+            <img :src="[movie.img]" v-bind:alt="[movie.name]">
+            <a v-bind:href="[movie.downloadUrl]">{{ movie.name }}</a>
+        </div>
+        <ul class="pagination clearfix" id="pagination" v-if="totalPages>0">
+            <li v-if="curPage>1"><a v-on:click="curPage--,btnClick(curPage)">上一页</a></li>
+            <li v-if="curPage==1" :class="{ 'disabled' : curPage == 1}"><a href="#">上一页</a></li>
+            <li v-for="index in totalPages"  v-bind:class="{ 'active': curPage == index}">
+                <a v-on:click="btnClick(index)">{{ index }}</a>
+            </li>
+            <li v-if="curPage!=totalPages"><a v-on:click="curPage++,btnClick(curPage)">下一页</a></li>
+            <li v-if="curPage == totalPages" :class="{ 'disabled' : curPage == totalPages}"><a href="#">下一页</a></li>
+            <li>{{ curPages }} / {{totalPages}}</li>
+        </ul>
+    </div>
+</div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="../js/bootstrap.min.js"></script>
+<script src="../js/vue.min.js"></script>
+<script>
+    $(function(){
+        var app = new Vue({
+            el: '#app',
+            data: {"movies":[],"curPage":0,"totalPages":0,"curMovies":[]},
+            mounted: function(){
+                this.loadFileList();
+            },
+            methods:{
+                // 分页按钮事件
+                btnClick : function(idx){
+                    this.curPage = idx
+                    this.curMovies = getPageMovie(this.totalMovies,this.curPage);
+                },
+                // 获取符合搜索条件的电影列表
+                loadFileList:function(){
+                    var _self = this;
+                    $.ajax({
+                        type : 'POST',
+                        url : 'http://localhost:3000/searchFileByName',
+                        dataType: "json",
+                        data: {
+                            "movieName" : $.trim($('#ipt_name').val())
+                        },
+                        success : function(result){
+                            if(result.movies && result.movies.length > 0){
+                                _self.totalMovies = result.movies;
+                                _self.curPage = result.curPage;
+                                _self.totalPages = result.totalPages;
+                                _self.curMovies = getPageMovie(_self.totalMovies,_self.curPage);
+                            }else{
+                                _self.movies = [];
+                                _self.totalPages = 0;
+                                _self.curPage = 0;
+                            }
+                        },
+                        error : function(msg){
+                            console.error(msg);
+                        }
+                    })
+                }
+            }
+        })
+    })
+
+    // 获取当前分页数据
+    var getPageMovie = (totalMovies,page) => {
+        let movieLen = totalMovies.length;
+        let everyPage = 12;
+        let limit = ( movieLen < everyPage * page ) ? movieLen : everyPage * page;
+        let result = [];
+        // 获取指定页码的文件
+        for(let i = everyPage * ( page - 1 ); i < limit ; i++){
+            result.push(totalMovies[i])
+        }
+        return result;
+    }
+</script>
+</body>
+</html>
