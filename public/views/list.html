@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="utf-8">
@@ -40,7 +40,7 @@
             </li>
             <li v-if="curPage!=totalPages"><a v-on:click="curPage++,btnClick(curPage)">下一页</a></li>
             <li v-if="curPage == totalPages" :class="{ 'disabled' : curPage == totalPages}"><a href="#">下一页</a></li>
-            <li>{{ curPages }} / {{totalPages}}</li>
+            <li>{{ curPage }} / {{totalPages}}</li>
         </ul>
     </div>
 </div>
