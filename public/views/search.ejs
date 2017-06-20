@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>搜索</title>
+    <!-- Bootstrap -->
+    <link href="/public/css/bootstrap.css" rel="stylesheet">
+    <link href="/public/css/base.css" rel="stylesheet">
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+    <script src="https://cdn.bootcss.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <script src="https://cdn.bootcss.com/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body>
+    <div class="container">
+        <h1><%= title %></h1>
+        <div class="col-sm-8 col-sm-offset-2 searchForm">
+            <form action="loginUser" method="post" class="form-inline">
+                <div class="form-group">
+                    <label for="ipt_name" class="col-sm-3 control-label">电影名</label>
+                    <div class="col-sm-9"><input type="text" class="form-control" id="ipt_name" placeholder="请输入电影名" name="movieName"></div>
+                </div>
+                <button type="submit" class="btn btn-primary" id="submitBtn">Submit</button>
+            </form>
+        </div>
+
+        <div id="movieList" class="col-sm-8 col-sm-offset-2"></div>
+    </div>
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+<script src="/public/js/bootstrap.min.js"></script>
+<script>
+    $(function(){
+        $("form").submit(function(e){
+            e.preventDefault();
+            $.ajax({
+                type : 'POST',
+                url : 'searchFileByName',
+                dataType: "json",
+                data: {
+                    "movieName" : $('#ipt_name').val()
+                },
+                success : function(data){
+                    $('#movieList').html('');
+                    if(data.movies && data.movies.length > 0){
+                        console.log(data)
+                        data.movies.forEach(function(value,index){
+                            $('#movieList').append('<div class="movieInfo col-xs-4 col-sm-3 col-lg-2">'
+                                +'<img src="'+ value.img +'" alt="">'
+                                +'<a href="'+ value.downloadUrl+'">'+ value.name +'</a>'
+                            +'</div>');
+                        })
+                    }else{
+                        $('#movieList').append('<div class="movieInfo col-xs-12 col-sm-12 col-lg-12">没有找到匹配的文件</div>');
+                    }
+                },
+                error : function(msg){
+                    console.error(msg);
+                }
+            })
+        });
+    })
+</script>
+</body>
+</html>
